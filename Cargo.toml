@@ -1,0 +1,21 @@
+[package]
+name = "async-ping"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.84"
+
+[features]
+bin = ["tokio/macros"]
+
+[[bin]]
+name = "ping"
+path = "src/bin/ping.rs"
+required-features = ["bin"]
+
+[dependencies]
+libc = "0"
+socket2 = "0"
+tokio = { version = "1", features = ["net", "rt", "time"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
