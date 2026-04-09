@@ -26,7 +26,7 @@ use async_ping::ping;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let stats = ping("0.0.0.0", "8.8.8.8", 5, 64, Duration::from_secs(1)).await?;
+    let stats = ping("0.0.0.0", "8.8.8.8", 5, Duration::from_secs(1), 64).await?;
     println!(
         "{} tx / {} rx, rtt min/avg/max = {:.3}/{:.3}/{:.3} ms",
         stats.packets_tx,

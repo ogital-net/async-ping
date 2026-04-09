@@ -15,10 +15,10 @@ use std::{
 };
 
 pub use net::IcmpSocket;
-use socket2::{MaybeUninitSlice, MsgHdrMut, SockAddr};
+use socket2::{MaybeUninitSlice, SockAddr};
 use tokio::time::timeout;
 
-use crate::addr::ToIpAddr;
+use crate::{addr::ToIpAddr, net::MsgHdrMut};
 
 const IP_HEADER_SIZE: usize = 20;
 const ICMP_HEADER_SIZE: usize = 8;
@@ -661,6 +661,29 @@ mod tests {
         let reply = send_icmp_echo_v6(&sock, &payload, 1, Duration::from_secs(5))
             .await
             .unwrap();
+        assert_eq!(reply.src_addr, Ipv6Addr::LOCALHOST);
+        assert_eq!(reply.len, 16);
+        assert_eq!(reply.seq, 1);
+        assert!(reply.hlim > 0);
+        assert!(reply.rtt > Duration::ZERO);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_send_icmp_echo_v6_send() {
+        let reply = tokio::task::spawn(async {
+            let sock = IcmpSocket::bind(Ipv6Addr::UNSPECIFIED).await.unwrap();
+            sock.connect("::1").await.unwrap();
+
+            let payload = [];
+
+            let reply = send_icmp_echo_v6(&sock, &payload, 1, Duration::from_secs(5))
+                .await
+                .unwrap();
+            reply
+        })
+        .await
+        .unwrap();
+
         assert_eq!(reply.src_addr, Ipv6Addr::LOCALHOST);
         assert_eq!(reply.len, 16);
         assert_eq!(reply.seq, 1);
